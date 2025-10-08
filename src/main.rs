@@ -1,5 +1,5 @@
 use std::{
-    fs,                            // for raeding files
+    fs,                            // for reading files
     io::{BufReader, prelude::*},   // handling incoming data streams
     net::{TcpListener, TcpStream}, // server and client connection
     thread,                        // for multi-threading
