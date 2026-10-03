@@ -69,17 +69,21 @@ fn handle_8888(mut stream: TcpStream) {
     if path.is_empty() {
         path = "index.html";
     }
+    let asset_path = format!("public/{}", path);
 
     /* attempt to read the requested files from disk
        On success, respond with 200 OK and file's contents
        On failure, response with 404 Not Found
     */
-    let (status_line, contents, content_type) = match fs::read(path) {
-        Ok(contents) => ("HTTP/1.1 200 OK", contents, get_content_type(path)),
-        Err(_) => {
-            let not_found = b"<h1>404 Not Found</h1>".to_vec();
-            ("HTTP/1.1 404 NOT FOUND", not_found, "text/html")
-        }
+    let (status_line, contents, content_type) = match fs::read(&asset_path) {
+        Ok(contents) => ("HTTP/1.1 200 OK", contents, get_content_type(&asset_path)),
+        Err(_) => match fs::read("public/404.html") {
+            Ok(contents) => ("HTTP/1.1 404 NOT FOUND", contents, "text/html"),
+            Err(_) => {
+                let not_found = b"<h1>404 Not Found</h1>".to_vec();
+                ("HTTP/1.1 404 NOT FOUND", not_found, "text/html")
+            }
+        },
     };
 
     // Build HTTP response header
@@ -108,6 +112,8 @@ fn get_content_type(filename: &str) -> &str {
         "image/png"
     } else if filename.ends_with(".mp4") {
         "video/mp4"
+    } else if filename.ends_with(".webm") {
+        "video/webm"
     } else if filename.ends_with(".mp3") {
         "audio/mpeg"
     } else if filename.ends_with(".ico") {
